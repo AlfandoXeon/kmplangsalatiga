@@ -1,0 +1,17 @@
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # 1. Forward all static asset requests directly to public/assets
+    RewriteRule ^assets/(.*)$ public/assets/$1 [L,QSA]
+
+    # 2. If accessing existing file or directory directly, serve as is
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 3. Route all other requests to root index.php
+    RewriteRule ^(.*)$ index.php [L,QSA]
+</IfModule>

@@ -1,0 +1,50 @@
+/* Custom CSS - K'mplang Salatiga */
+
+/* Hero Banner Overlay (Dual-Theme) */
+.hero-bg {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.84) 0%, rgba(248, 250, 252, 0.94) 100%), url('../images/thumb.jpg') no-repeat center center / cover;
+}
+
+.dark .hero-bg {
+    background: linear-gradient(to bottom, rgba(11, 15, 25, 0.80) 0%, rgba(11, 15, 25, 0.92) 100%), url('../images/thumb.jpg') no-repeat center center / cover;
+}
+
+/* Google Drive-like File Grid Cards */
+.drive-card {
+    transition: all 0.15s ease-in-out;
+}
+
+.drive-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Light / Dark Mode Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: #0b0f19;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #334155;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #d97706;
+}
