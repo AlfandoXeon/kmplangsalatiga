@@ -5,6 +5,17 @@ namespace App\Core;
 use App\Config\App;
 use App\Config\Security;
 
+/**
+ * ============================================================================
+ * Pipeline Middleware Keamanan & Otorisasi (RBAC)
+ * ============================================================================
+ * Berisi kontrak dan implementasi penjaga rute (Route Guards):
+ * 1. AuthMiddleware  : Memastikan pengguna telah login.
+ * 2. AdminMiddleware : Memastikan pengguna memiliki role 'admin' atau 'pengurus'.
+ * 3. CsrfMiddleware  : Memvalidasi token anti-CSRF pada setiap request POST.
+ * 4. GuestMiddleware : Mencegah pengguna yang sudah login membuka halaman login/register.
+ * ============================================================================
+ */
 interface MiddlewareInterface
 {
     public function handle(): bool;
@@ -15,7 +26,7 @@ class AuthMiddleware implements MiddlewareInterface
     public function handle(): bool
     {
         if (empty($_SESSION['user'])) {
-            $_SESSION['flash_error'] = 'Silakan login terlebih dahulu untuk mengakses halaman ini.';
+            $_SESSION['flash_error'] = 'Silakan masuk terlebih dahulu untuk mengakses halaman ini.';
             $_SESSION['intended_url'] = $_SERVER['REQUEST_URI'] ?? '/';
             header('Location: ' . App::baseUrl('/login'));
             exit;
@@ -29,6 +40,7 @@ class AdminMiddleware implements MiddlewareInterface
     public function handle(): bool
     {
         if (empty($_SESSION['user'])) {
+            $_SESSION['flash_error'] = 'Silakan masuk dengan akun pengurus/admin terlebih dahulu.';
             header('Location: ' . App::baseUrl('/login'));
             exit;
         }
@@ -37,7 +49,7 @@ class AdminMiddleware implements MiddlewareInterface
         if ($role !== 'admin' && $role !== 'pengurus') {
             http_response_code(403);
             $view = new View();
-            $view->render('errors/403', ['title' => 'Akses Ditolak'], 'main');
+            $view->render('errors/403', ['title' => '403 — Akses Ditolak'], 'main');
             exit;
         }
 
@@ -49,11 +61,14 @@ class CsrfMiddleware implements MiddlewareInterface
 {
     public function handle(): bool
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $token = $_POST['_csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
             if (!Security::verifyCsrfToken($token)) {
                 http_response_code(403);
-                die('Keamanan Sistem: Token CSRF tidak valid atau sesi Anda telah kedaluwarsa. Silakan muat ulang halaman.');
+                $_SESSION['flash_error'] = 'Sesi formulir Anda telah kedaluwarsa atau token keamanan tidak valid. Silakan coba kembali.';
+                $referer = $_SERVER['HTTP_REFERER'] ?? App::baseUrl('/');
+                header('Location: ' . $referer);
+                exit;
             }
         }
         return true;

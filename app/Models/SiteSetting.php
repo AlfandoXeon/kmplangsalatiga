@@ -5,11 +5,24 @@ namespace App\Models;
 use App\Core\Model;
 use PDO;
 
+/**
+ * ============================================================================
+ * Model SiteSetting - Penyimpanan Key-Value CMS Dinamis dengan In-Memory Cache
+ * ============================================================================
+ * Menyimpan teks konten website (hero, tentang, sambutan, kontak) dan
+ * melakukan caching di memori statis agar tidak mengulang query SQL per request.
+ * ============================================================================
+ */
 class SiteSetting extends Model
 {
     protected string $table = 'site_settings';
+
+    /** @var ?array<string, string> Cache pengaturan selama 1 siklus request */
     private static ?array $cachedSettings = null;
 
+    /**
+     * Mengambil seluruh pasangan `setting_key => setting_value`.
+     */
     public function getAllKeyValue(): array
     {
         if (self::$cachedSettings !== null) {
@@ -22,12 +35,19 @@ class SiteSetting extends Model
         return self::$cachedSettings;
     }
 
+    /**
+     * Mengambil satu nilai pengaturan berdasarkan kunci, atau nilai default jika belum diatur.
+     */
     public function get(string $key, string $default = ''): string
     {
         $all = $this->getAllKeyValue();
         return $all[$key] ?? $default;
     }
 
+    /**
+     * Menyimpan atau memperbarui satu pengaturan (UPSERT via ON DUPLICATE KEY UPDATE)
+     * dan mereset cache in-memory.
+     */
     public function set(string $key, ?string $value, string $group = 'general'): bool
     {
         $stmt = $this->db->prepare("
@@ -43,7 +63,7 @@ class SiteSetting extends Model
             'grp2' => $group
         ]);
 
-        self::$cachedSettings = null; // Clear cache
+        self::$cachedSettings = null;
         return $res;
     }
 }

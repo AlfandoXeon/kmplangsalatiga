@@ -2,6 +2,10 @@
 use App\Config\App;
 use App\Config\Security;
 
+if (!empty($currentUser)) {
+    return;
+}
+
 $modalCsrf = Security::generateCsrfToken();
 ?>
 
@@ -108,15 +112,15 @@ $modalCsrf = Security::generateCsrfToken();
                         </div>
                     </div>
 
-                    <!-- NIM & Fakultas -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <!-- NIM, Fakultas & Angkatan -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                NIM (Nomor Mahasiswa)
+                                NIM
                             </label>
                             <div class="relative flex items-center">
-                                <span class="material-symbols-outlined absolute left-3.5 text-slate-400 dark:text-slate-400 text-[20px] pointer-events-none select-none flex items-center justify-center leading-none">tag</span>
-                                <input type="text" name="nim" placeholder="Contoh: 672024xxx" class="w-full h-11 pl-11 pr-4 bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-amber-500/20 transition-all">
+                                <span class="material-symbols-outlined absolute left-3 text-slate-400 dark:text-slate-400 text-[18px] pointer-events-none select-none flex items-center justify-center leading-none">tag</span>
+                                <input type="text" name="nim" placeholder="672024xxx" class="w-full h-11 pl-9 pr-3 bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-all">
                             </div>
                         </div>
                         <div>
@@ -124,8 +128,17 @@ $modalCsrf = Security::generateCsrfToken();
                                 Fakultas / Kampus
                             </label>
                             <div class="relative flex items-center">
-                                <span class="material-symbols-outlined absolute left-3.5 text-slate-400 dark:text-slate-400 text-[20px] pointer-events-none select-none flex items-center justify-center leading-none">school</span>
-                                <input type="text" name="fakultas" placeholder="Contoh: FTI UKSW" class="w-full h-11 pl-11 pr-4 bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-amber-500/20 transition-all">
+                                <span class="material-symbols-outlined absolute left-3 text-slate-400 dark:text-slate-400 text-[18px] pointer-events-none select-none flex items-center justify-center leading-none">school</span>
+                                <input type="text" name="fakultas" placeholder="FTI UKSW" class="w-full h-11 pl-9 pr-3 bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-all">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                Angkatan
+                            </label>
+                            <div class="relative flex items-center">
+                                <span class="material-symbols-outlined absolute left-3 text-slate-400 dark:text-slate-400 text-[18px] pointer-events-none select-none flex items-center justify-center leading-none">event</span>
+                                <input type="text" name="angkatan" placeholder="2024" class="w-full h-11 pl-9 pr-3 bg-slate-50 dark:bg-slate-950/80 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-all">
                             </div>
                         </div>
                     </div>

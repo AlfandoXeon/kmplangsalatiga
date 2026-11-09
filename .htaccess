@@ -1,17 +1,50 @@
 DirectoryIndex index.php
+Options -Indexes
 
+# ----------------------------------------------------------------------
+# 1. Proteksi Berkas Konfigurasi & Basis Data dari Akses Publik
+# ----------------------------------------------------------------------
+<FilesMatch "^(\.env|\.env\.example|\.gitignore|README\.md|.*\.sql|.*\.log)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ----------------------------------------------------------------------
+# 2. Anti-CORS & Cross-Origin Resource Sharing untuk Aset Statis & Media
+#    Memastikan CSS, JS, Gambar, Audio, Video, dan Font tidak terblokir
+#    pada Cloud Hosting (InfinityFree / Cloudflare CDN).
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|mjs|json|png|jpg|jpeg|webp|gif|svg|ico|mp3|mp4|webm|ogg|wav|woff|woff2|ttf|eot)$">
+        Header set Access-Control-Allow-Origin "*"
+        Header set Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+        Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Range"
+        Header set Cross-Origin-Resource-Policy "cross-origin"
+        Header set Timing-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 3. Routing URL & Resolusi Aset (Kompatibel XAMPP & InfinityFree)
+# ----------------------------------------------------------------------
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /
 
-    # 1. Forward all static asset requests directly to public/assets
+    # Blokir akses langsung ke folder internal kode sumber backend (app/ atau storage/sessions/)
+    RewriteRule ^(app|storage/sessions|storage/logs|storage/temp)(/.*)?$ - [F,L]
+
+    # Teruskan permintaan aset statis /assets/... langsung ke public/assets/...
     RewriteRule ^assets/(.*)$ public/assets/$1 [L,QSA]
 
-    # 2. If accessing existing file or directory directly, serve as is
-    RewriteCond %{REQUEST_FILENAME} -f [OR]
-    RewriteCond %{REQUEST_FILENAME} -d
+    # Jika mengakses berkas fisik yang benar-benar ada (misal storage/uploads/...), layani langsung
+    RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ - [L]
 
-    # 3. Route all other requests to root index.php
+    # Arahkan seluruh rute dinamis lainnya ke Front Controller utama (index.php)
     RewriteRule ^(.*)$ index.php [L,QSA]
 </IfModule>

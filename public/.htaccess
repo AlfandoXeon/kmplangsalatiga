@@ -1,3 +1,15 @@
+Options -Indexes
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|mjs|json|png|jpg|jpeg|webp|gif|svg|ico|mp3|mp4|webm|ogg|wav|woff|woff2|ttf|eot)$">
+        Header set Access-Control-Allow-Origin "*"
+        Header set Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+        Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Range"
+        Header set Cross-Origin-Resource-Policy "cross-origin"
+        Header set Timing-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
@@ -9,5 +21,5 @@
     # Handle Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [L]
+    RewriteRule ^ index.php [L,QSA]
 </IfModule>

@@ -3,12 +3,21 @@
 namespace App\Controllers\Admin;
 
 use App\Core\Controller;
+use App\Config\Database;
 use App\Models\Activity;
 use App\Models\ActivityMedia;
 use App\Models\AuditLog;
 use App\Helpers\FileUpload;
 use App\Helpers\Sanitizer;
 
+/**
+ * ============================================================================
+ * Class ActivityAdminController - Manajemen Kegiatan & Album Multi-Media
+ * ============================================================================
+ * Menggunakan transaksi database (`Database::transaction`) saat menyimpan
+ * kegiatan beserta unggahan multi-berkas agar integritas data selalu terjaga.
+ * ============================================================================
+ */
 class ActivityAdminController extends Controller
 {
     private Activity $activityModel;
@@ -22,67 +31,74 @@ class ActivityAdminController extends Controller
 
     public function index(): void
     {
-        $activities = $this->activityModel->all('tanggal_kegiatan DESC, id DESC');
+        $activities = $this->activityModel->getAllWithMediaCount();
 
         $this->view('admin/activities/index', [
-            'title'      => 'Kelola Kegiatan & Dokumentasi - K\'mplang Salatiga',
-            'activities' => $activities,
-            'enableAos'  => false
+            'title'      => 'Kelola Kegiatan & Dokumentasi — K\'mplang Salatiga',
+            'activities' => $activities
         ], 'admin');
     }
 
     public function create(): void
     {
         $this->view('admin/activities/create', [
-            'title'     => 'Tambah Kegiatan Baru - K\'mplang Salatiga',
-            'enableAos' => false
+            'title' => 'Publikasi Kegiatan Baru — K\'mplang Salatiga'
         ], 'admin');
     }
 
     public function store(): void
     {
         $judul = trim($_POST['judul'] ?? '');
+        $kategori = trim($_POST['kategori_kegiatan'] ?? 'Dokumentasi');
         $deskripsi = trim($_POST['deskripsi'] ?? '');
-        $tanggal = $_POST['tanggal_kegiatan'] ?? date('Y-m-d');
+        $tanggal = !empty($_POST['tanggal_kegiatan']) ? $_POST['tanggal_kegiatan'] : date('Y-m-d');
         $lokasi = trim($_POST['lokasi'] ?? '');
+        $isFeatured = !empty($_POST['is_featured']) ? 1 : 0;
 
-        if (empty($judul)) {
+        if ($judul === '') {
             $this->setFlash('error', 'Judul kegiatan wajib diisi.');
             $this->redirect('/admin/activities/create');
         }
 
+        // Bangun slug URL unik
         $slug = Sanitizer::slugify($judul);
-        // Ensure slug uniqueness
-        $check = $this->activityModel->findBy('slug', $slug);
-        if ($check) {
+        if ($this->activityModel->findBy('slug', $slug)) {
             $slug .= '-' . time();
         }
 
-        // Handle cover image
+        // Unggah foto sampul utama jika disertakan
         $coverName = null;
         if (!empty($_FILES['cover']['name'])) {
             $uploadResult = FileUpload::upload($_FILES['cover'], 'activities');
             if ($uploadResult['success']) {
                 $coverName = $uploadResult['file_name'];
+            } else {
+                $this->setFlash('error', 'Gagal mengunggah sampul: ' . $uploadResult['error']);
+                $this->redirect('/admin/activities/create');
             }
         }
 
-        $activityId = $this->activityModel->create([
-            'judul'            => $judul,
-            'slug'             => $slug,
-            'deskripsi'        => $deskripsi,
-            'tanggal_kegiatan' => $tanggal,
-            'lokasi'           => $lokasi,
-            'cover_image'      => $coverName,
-            'author_id'        => $this->userId()
-        ]);
+        // Simpan kegiatan & berkas album di dalam satu transaksi database
+        $activityId = Database::transaction(function () use ($judul, $slug, $kategori, $deskripsi, $tanggal, $lokasi, $coverName, $isFeatured) {
+            $newId = $this->activityModel->create([
+                'judul'             => $judul,
+                'slug'              => $slug,
+                'kategori_kegiatan' => $kategori ?: 'Dokumentasi',
+                'deskripsi'         => $deskripsi,
+                'tanggal_kegiatan'  => $tanggal,
+                'lokasi'            => $lokasi,
+                'cover_image'       => $coverName,
+                'author_id'         => $this->userId(),
+                'is_featured'       => $isFeatured
+            ]);
 
-        // Handle multiple media uploads for the Google Drive Album!
-        $this->handleMultiMediaUpload($activityId);
+            $this->handleMultiMediaUpload($newId);
+            return $newId;
+        });
 
-        AuditLog::record($this->userId(), 'CREATE_ACTIVITY', 'activities', $activityId, "Created activity: $judul");
+        AuditLog::record($this->userId(), 'CREATE_ACTIVITY', 'activities', $activityId, "Created activity: {$judul}");
 
-        $this->setFlash('success', 'Kegiatan & album dokumentasi berhasil dipublikasikan!');
+        $this->setFlash('success', 'Kegiatan dan album dokumentasi berhasil dipublikasikan.');
         $this->redirect('/admin/activities');
     }
 
@@ -99,10 +115,9 @@ class ActivityAdminController extends Controller
         $mediaList = $this->mediaModel->getByActivityId($actId);
 
         $this->view('admin/activities/edit', [
-            'title'     => 'Edit Kegiatan - K\'mplang Salatiga',
+            'title'     => 'Edit Kegiatan & Album — K\'mplang Salatiga',
             'activity'  => $activity,
-            'mediaList' => $mediaList,
-            'enableAos' => false
+            'mediaList' => $mediaList
         ], 'admin');
     }
 
@@ -117,9 +132,11 @@ class ActivityAdminController extends Controller
         }
 
         $judul = trim($_POST['judul'] ?? '');
+        $kategori = trim($_POST['kategori_kegiatan'] ?? 'Dokumentasi');
         $deskripsi = trim($_POST['deskripsi'] ?? '');
-        $tanggal = $_POST['tanggal_kegiatan'] ?? date('Y-m-d');
+        $tanggal = !empty($_POST['tanggal_kegiatan']) ? $_POST['tanggal_kegiatan'] : date('Y-m-d');
         $lokasi = trim($_POST['lokasi'] ?? '');
+        $isFeatured = !empty($_POST['is_featured']) ? 1 : 0;
 
         $coverName = $activity['cover_image'];
         if (!empty($_FILES['cover']['name'])) {
@@ -129,20 +146,23 @@ class ActivityAdminController extends Controller
             }
         }
 
-        $this->activityModel->update($actId, [
-            'judul'            => $judul,
-            'deskripsi'        => $deskripsi,
-            'tanggal_kegiatan' => $tanggal,
-            'lokasi'           => $lokasi,
-            'cover_image'      => $coverName
-        ]);
+        Database::transaction(function () use ($actId, $judul, $kategori, $deskripsi, $tanggal, $lokasi, $coverName, $isFeatured) {
+            $this->activityModel->update($actId, [
+                'judul'             => $judul,
+                'kategori_kegiatan' => $kategori ?: 'Dokumentasi',
+                'deskripsi'         => $deskripsi,
+                'tanggal_kegiatan'  => $tanggal,
+                'lokasi'            => $lokasi,
+                'cover_image'       => $coverName,
+                'is_featured'       => $isFeatured
+            ]);
 
-        // Add any newly uploaded media files
-        $this->handleMultiMediaUpload($actId);
+            $this->handleMultiMediaUpload($actId);
+        });
 
-        AuditLog::record($this->userId(), 'UPDATE_ACTIVITY', 'activities', $actId, "Updated activity: $judul");
+        AuditLog::record($this->userId(), 'UPDATE_ACTIVITY', 'activities', $actId, "Updated activity: {$judul}");
 
-        $this->setFlash('success', 'Kegiatan dan media album berhasil diperbarui.');
+        $this->setFlash('success', 'Kegiatan dan berkas album berhasil diperbarui.');
         $this->redirect('/admin/activities/edit/' . $actId);
     }
 
@@ -187,12 +207,15 @@ class ActivityAdminController extends Controller
         }
 
         $this->activityModel->delete($actId);
-        AuditLog::record($this->userId(), 'DELETE_ACTIVITY', 'activities', $actId, "Deleted activity ID: $actId");
+        AuditLog::record($this->userId(), 'DELETE_ACTIVITY', 'activities', $actId, "Deleted activity ID: {$actId}");
 
-        $this->setFlash('success', 'Kegiatan dan seluruh berkas album berhasil dihapus.');
+        $this->setFlash('success', 'Kegiatan beserta seluruh berkas di dalam album telah dihapus.');
         $this->redirect('/admin/activities');
     }
 
+    /**
+     * Memproses unggahan banyak berkas (`$_FILES['media']`) sekaligus ke dalam album.
+     */
     private function handleMultiMediaUpload(int $activityId): void
     {
         if (empty($_FILES['media']['name']) || !is_array($_FILES['media']['name'])) {

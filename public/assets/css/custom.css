@@ -1,50 +1,557 @@
-/* Custom CSS - K'mplang Salatiga */
+/**
+ * ============================================================================
+ * Custom Vanilla CSS & Poster Typography Design System
+ * Website Resmi K'mplang Salatiga
+ * ============================================================================
+ * Konsep Visual:
+ * 1. Palet Warna Ramah Mata (Eye-Comfort):
+ *    - Light Mode : White-Yellow / Warm Cream Paper (#FAF6E6, #FFFDF5, #F2EAD0)
+ *    - Dark Mode  : Matte Dark Grey (#1C1C20, #242429, #2C2C33)
+ * 2. Tipografi Poster & Editorial (High-Contrast Display + Nyaman Dibaca):
+ *    - Display Serif : 'Fraunces' (Judul Poster & Aksen Editorial)
+ *    - Display Sans  : 'Syne' / 'Montserrat' (Headline Tegas & Label Poster)
+ *    - Reading Body  : 'Plus Jakarta Sans' & 'Source Serif 4' (Kenyamanan Baca)
+ *    - Metadata Mono : 'JetBrains Mono' (Nomor Edisi, Tanggal, Anggaran, NIM)
+ * 3. Komponen Gaya Poster (Poster Frame, Offset Shadow, Drop Cap, Issue Strip).
+ * ============================================================================
+ */
 
-/* Hero Banner Overlay (Dual-Theme) */
+/* --------------------------------------------------------------------------
+ * 1. CSS Custom Properties (Tema White-Yellow untuk Light & Dark Grey untuk Dark)
+ * -------------------------------------------------------------------------- */
+:root {
+    /* Light Mode: Warm White-Yellow Poster Paper */
+    --km-bg: #FAF6E6;
+    --km-bg-alt: #F2EAD0;
+    --km-surface: #FFFDF6;
+    --km-surface-elevated: #F5EED8;
+    --km-text: #1E1C17;
+    --km-text-secondary: #4E493D;
+    --km-text-muted: #756E5E;
+    --km-accent: #C86D00;
+    --km-accent-hover: #A85800;
+    --km-yellow: #FACC15;
+    --km-yellow-soft: #FEF08A;
+    --km-border: #DCD2B4;
+    --km-border-strong: #221F1A;
+    --km-shadow-poster: 5px 5px 0px #221F1A;
+    --km-shadow-poster-sm: 3px 3px 0px #221F1A;
+    --km-shadow-poster-hover: 7px 7px 0px #C86D00;
+    --km-grid-line: rgba(34, 31, 26, 0.08);
+}
+
+html.dark {
+    /* Dark Mode: Matte Dark Grey Poster */
+    --km-bg: #1B1B1F;
+    --km-bg-alt: #222227;
+    --km-surface: #27272D;
+    --km-surface-elevated: #303038;
+    --km-text: #F0ECE1;
+    --km-text-secondary: #C4BFB3;
+    --km-text-muted: #928D82;
+    --km-accent: #F59E0B;
+    --km-accent-hover: #FBBF24;
+    --km-yellow: #FACC15;
+    --km-yellow-soft: rgba(250, 204, 21, 0.18);
+    --km-border: #383842;
+    --km-border-strong: #52525E;
+    --km-shadow-poster: 5px 5px 0px #0E0E11;
+    --km-shadow-poster-sm: 3px 3px 0px #0E0E11;
+    --km-shadow-poster-hover: 7px 7px 0px #F59E0B;
+    --km-grid-line: rgba(255, 255, 255, 0.05);
+}
+
+/* --------------------------------------------------------------------------
+ * 2. Reset & Kompatibilitas Bootstrap 5 + Utility Classes
+ * -------------------------------------------------------------------------- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+    background-color: var(--km-bg);
+    color: var(--km-text);
+}
+
+body {
+    background-color: var(--km-bg) !important;
+    color: var(--km-text) !important;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.7;
+    letter-spacing: -0.005em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    /* Efek tekstur grid poster halus */
+    background-image:
+        linear-gradient(to right, var(--km-grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--km-grid-line) 1px, transparent 1px);
+    background-size: 48px 48px;
+}
+
+/* Pastikan tautan tidak diberi garis bawah default oleh Bootstrap */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Harmonisasi class warna lama agar mengikuti tema White-Yellow & Dark Grey */
+.bg-slate-50 {
+    background-color: var(--km-bg) !important;
+}
+.bg-slate-100 {
+    background-color: var(--km-bg-alt) !important;
+}
+.bg-white {
+    background-color: var(--km-surface) !important;
+}
+html.dark .dark\:bg-slate-950 {
+    background-color: var(--km-bg) !important;
+}
+html.dark .dark\:bg-slate-900,
+html.dark .dark\:bg-slate-900\/90,
+html.dark .dark\:bg-slate-900\/60,
+html.dark .dark\:bg-slate-900\/40 {
+    background-color: var(--km-surface) !important;
+}
+html.dark .dark\:bg-slate-800,
+html.dark .dark\:bg-slate-800\/80,
+html.dark .dark\:bg-slate-800\/40 {
+    background-color: var(--km-surface-elevated) !important;
+}
+.border-slate-200,
+.border-slate-100,
+.border-slate-300 {
+    border-color: var(--km-border) !important;
+}
+html.dark .dark\:border-slate-800,
+html.dark .dark\:border-slate-700 {
+    border-color: var(--km-border) !important;
+}
+
+/* --------------------------------------------------------------------------
+ * 3. Sistem Tipografi Poster & Kenyamanan Membaca (Typography Effects)
+ * -------------------------------------------------------------------------- */
+.font-poster-serif {
+    font-family: 'Fraunces', Georgia, serif;
+    letter-spacing: -0.025em;
+}
+
+.font-poster-display {
+    font-family: 'Syne', 'Montserrat', sans-serif;
+    letter-spacing: -0.03em;
+}
+
+.font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.font-reading,
+.font-serif-reading {
+    font-family: 'Source Serif 4', Georgia, serif;
+    line-height: 1.85;
+    font-size: 1.0625rem;
+    color: var(--km-text);
+}
+
+.poster-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    color: var(--km-text);
+}
+
+.poster-badge,
+.poster-badge-gold,
+.poster-badge-red {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.65rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background-color: var(--km-bg-alt);
+    color: var(--km-text);
+    border: 1px solid var(--km-border-strong);
+    border-radius: 0.375rem;
+}
+
+.poster-progress {
+    width: 100%;
+    height: 0.5rem;
+    background-color: var(--km-bg-alt);
+    border: 1px solid var(--km-border);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.poster-progress-bar {
+    height: 100%;
+    background-color: var(--km-yellow);
+    border-radius: 9999px;
+    transition: width 0.3s ease;
+}
+
+.poster-divider {
+    border: 0;
+    border-top: 1.5px solid var(--km-border);
+    margin: 1.5rem 0;
+}
+
+.font-mono-meta {
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
+}
+
+/* Judul Raksasa Gaya Poster Pameran */
+.poster-display-xl {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 900;
+    font-size: clamp(2.4rem, 5.6vw, 4.75rem);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    color: var(--km-text);
+}
+
+.poster-display-lg {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 800;
+    font-size: clamp(1.85rem, 3.8vw, 3.1rem);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    color: var(--km-text);
+}
+
+/* Efek Teks Outline (Hollow Poster Text) */
+.poster-text-outline {
+    color: transparent;
+    -webkit-text-stroke: 1.75px var(--km-text);
+}
+
+html.dark .poster-text-outline {
+    -webkit-text-stroke: 1.75px var(--km-yellow);
+}
+
+/* Efek Stabilo / Marker Kuning Poster */
+.poster-highlight {
+    background: linear-gradient(180deg, transparent 52%, var(--km-yellow-soft) 52%);
+    padding: 0 0.2em;
+    border-radius: 2px;
+}
+
+/* Badge / Label Kicker di Atas Judul Poster */
+.poster-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background-color: var(--km-bg-alt);
+    color: var(--km-text-muted);
+    border: 1px solid var(--km-border);
+    border-radius: 0.375rem;
+}
+
+html.dark .poster-kicker {
+    background-color: var(--km-surface-elevated);
+    color: var(--km-text-muted);
+    border-color: var(--km-border);
+}
+
+/* Efek Drop Cap (Huruf Pertama Besar ala Majalah/Poster) */
+.drop-cap::first-letter {
+    float: left;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 3.4rem;
+    font-weight: 900;
+    line-height: 0.85;
+    padding-top: 4px;
+    padding-right: 12px;
+    padding-bottom: 2px;
+    color: var(--km-accent);
+}
+
+/* Kenyamanan Baca Artikel (Measure 68ch, Kontras Lembut, Spasi Paragraf) */
+.editorial-prose {
+    max-width: 70ch;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 1.08rem;
+    line-height: 1.88;
+    color: var(--km-text);
+}
+
+.editorial-prose p {
+    margin-bottom: 1.35rem;
+}
+
+.editorial-prose h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--km-text);
+}
+
+.editorial-prose h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.35;
+    margin-top: 1.65rem;
+    margin-bottom: 0.65rem;
+    color: var(--km-text);
+}
+
+.editorial-prose ul {
+    list-style-type: disc !important;
+    margin-bottom: 1.35rem;
+    padding-left: 1.5rem;
+}
+
+.editorial-prose ol {
+    list-style-type: decimal !important;
+    margin-bottom: 1.35rem;
+    padding-left: 1.5rem;
+}
+
+.editorial-prose li {
+    margin-bottom: 0.5rem;
+}
+
+.editorial-prose blockquote {
+    margin: 1.5rem 0;
+    padding: 0.85rem 1.25rem;
+    border-left: 3px solid var(--km-border-strong);
+    background-color: var(--km-bg-alt);
+    font-style: italic;
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.editorial-prose strong {
+    font-weight: 800;
+    color: var(--km-text);
+}
+
+.editorial-prose code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    padding: 0.15rem 0.4rem;
+    background-color: var(--km-bg-alt);
+    border: 1px solid var(--km-border);
+    border-radius: 0.25rem;
+}
+
+.editorial-prose a {
+    text-decoration: underline;
+    font-weight: 600;
+    color: var(--km-text);
+}
+
+/* --------------------------------------------------------------------------
+ * 4. Komponen Kartu & Bingkai Gaya Poster (Poster Cards & Frames — Tanpa Hover Lag)
+ * -------------------------------------------------------------------------- */
+.poster-card {
+    background-color: var(--km-surface);
+    border: 2px solid var(--km-border-strong);
+    border-radius: 1rem;
+    box-shadow: var(--km-shadow-poster);
+    position: relative;
+    overflow: hidden;
+}
+
+.poster-card-flat {
+    background-color: var(--km-surface);
+    border: 1.5px solid var(--km-border);
+    border-radius: 1rem;
+    box-shadow: var(--km-shadow-poster-sm);
+}
+
+/* Strip Header Nomor Edisi pada Kartu Poster */
+.poster-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1.25rem;
+    background-color: var(--km-bg-alt);
+    border-bottom: 1.5px solid var(--km-border-strong);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Nomor Urut Besar Transparan di Sudut Poster */
+.poster-index-num {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 900;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--km-accent);
+    opacity: 0.22;
+    user-select: none;
+}
+
+/* Tombol Cetak Gaya Poster (Tanpa Transform Hover agar Ringan) */
+.poster-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.6rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background-color: #FACC15;
+    color: #18181B !important;
+    border: 2px solid #18181B;
+    border-radius: 0.75rem;
+    box-shadow: 4px 4px 0px #18181B;
+    cursor: pointer;
+}
+
+html.dark .poster-btn-primary {
+    border-color: #FACC15;
+    box-shadow: 4px 4px 0px rgba(250, 204, 21, 0.35);
+}
+
+.poster-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.6rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background-color: var(--km-surface);
+    color: var(--km-text) !important;
+    border: 2px solid var(--km-border-strong);
+    border-radius: 0.75rem;
+    box-shadow: 4px 4px 0px var(--km-border-strong);
+    cursor: pointer;
+}
+
+/* Pita Issue Bar / Marquee Statis di Atas Poster */
+.poster-issue-strip {
+    background-color: #1E1C17;
+    color: #FAF6E6;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    border-bottom: 2px solid var(--km-border-strong);
+}
+
+html.dark .poster-issue-strip {
+    background-color: #121215;
+    color: #FACC15;
+    border-bottom-color: #383842;
+}
+
+/* Hero Banner Dual-Theme (White-Yellow & Dark Grey) */
 .hero-bg {
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.84) 0%, rgba(248, 250, 252, 0.94) 100%), url('../images/thumb.jpg') no-repeat center center / cover;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(250, 204, 21, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(217, 119, 6, 0.15) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(250, 246, 230, 0.90) 0%, rgba(250, 246, 230, 0.97) 100%),
+        url('../images/thumb.jpg') no-repeat center center / cover;
 }
 
-.dark .hero-bg {
-    background: linear-gradient(to bottom, rgba(11, 15, 25, 0.80) 0%, rgba(11, 15, 25, 0.92) 100%), url('../images/thumb.jpg') no-repeat center center / cover;
+html.dark .hero-bg {
+    background:
+        radial-gradient(circle at 15% 20%, rgba(250, 204, 21, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(245, 158, 11, 0.10) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(27, 27, 31, 0.88) 0%, rgba(27, 27, 31, 0.97) 100%),
+        url('../images/thumb.jpg') no-repeat center center / cover;
 }
 
-/* Google Drive-like File Grid Cards */
+/* Google Drive-like File Grid Cards (Tanpa Transform Hover) */
 .drive-card {
-    transition: all 0.15s ease-in-out;
+    position: relative;
 }
 
-.drive-card:hover {
-    transform: translateY(-2px);
+/* Stamp / Lencana Poster Berputar Halus */
+.poster-stamp-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.65rem 1rem;
+    border: 2px dashed var(--km-accent);
+    background-color: var(--km-surface);
+    color: var(--km-accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transform: rotate(-2deg);
+    box-shadow: var(--km-shadow-poster-sm);
 }
 
-/* Light / Dark Mode Scrollbars */
+/* --------------------------------------------------------------------------
+ * 5. Scrollbar Kustom Sesuai Tema White-Yellow & Dark Grey
+ * -------------------------------------------------------------------------- */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f5f9;
-}
-
-.dark ::-webkit-scrollbar-track {
-    background: #0b0f19;
+    background: var(--km-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: var(--km-border);
     border-radius: 9999px;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-    background: #334155;
+    border: 2px solid var(--km-bg);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: var(--km-accent);
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-    background: #d97706;
+/* Sembunyikan scrollbar horizontal pada carousel mobile tanpa mematikan touch swipe */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* --------------------------------------------------------------------------
+ * 6. Responsivitas Tambahan untuk Perangkat Mobile & Tablet
+ * -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .poster-card {
+        box-shadow: 3px 3px 0px var(--km-border-strong);
+    }
+    .poster-display-xl {
+        font-size: 2.15rem;
+        line-height: 1.1;
+    }
+    .poster-display-lg {
+        font-size: 1.65rem;
+    }
+    .drop-cap::first-letter {
+        font-size: 2.75rem;
+    }
 }

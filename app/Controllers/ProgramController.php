@@ -5,6 +5,13 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\WorkProgram;
 
+/**
+ * Class ProgramController
+ * -------------------------------------------------------------------------
+ * Menampilkan halaman Transparansi Program Kerja organisasi beserta
+ * statistik progres pelaksanaan dan filter berdasarkan divisi.
+ * -------------------------------------------------------------------------
+ */
 class ProgramController extends Controller
 {
     private WorkProgram $prokerModel;
@@ -14,11 +21,15 @@ class ProgramController extends Controller
         $this->prokerModel = new WorkProgram();
     }
 
+    /**
+     * Merender daftar program kerja dengan filter divisi opsional.
+     */
     public function index(): void
     {
-        $divisiFilter = $_GET['divisi'] ?? null;
+        $divisiFilter = isset($_GET['divisi']) ? trim((string) $_GET['divisi']) : null;
         $divisiList = $this->prokerModel->getAllDivisi();
 
+        // Validasi apakah divisi yang dipilih termasuk dalam daftar divisi valid
         if ($divisiFilter && in_array($divisiFilter, $divisiList, true)) {
             $prokers = $this->prokerModel->getByDivisi($divisiFilter);
         } else {
@@ -29,12 +40,12 @@ class ProgramController extends Controller
         $stats = $this->prokerModel->getStats();
 
         $this->view('programs/index', [
-            'title'        => 'Transparansi Program Kerja - K\'mplang Salatiga',
+            'title'        => 'Transparansi Program Kerja — K\'mplang Salatiga',
             'prokers'      => $prokers,
             'divisiList'   => $divisiList,
             'activeDivisi' => $divisiFilter,
             'stats'        => $stats,
-            'enableAos'    => false // Sub-page: NO AOS
+            'enableAos'    => false
         ], 'main');
     }
 }

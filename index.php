@@ -22,14 +22,19 @@ if (php_sapi_name() === 'cli-server') {
     $rawUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     $cleanUri = rawurldecode($rawUri);
 
-    // Jika meminta aset dari /assets/..., layani langsung dari public/assets/...
-    if (str_starts_with($cleanUri, '/assets/')) {
-        $assetPath = __DIR__ . '/public' . $cleanUri;
+    // Jika meminta aset dari /assets/... atau /storage/uploads/..., layani langsung dengan header CORS aman
+    if (str_starts_with($cleanUri, '/assets/') || str_starts_with($cleanUri, '/storage/uploads/')) {
+        $assetPath = str_starts_with($cleanUri, '/assets/')
+            ? __DIR__ . '/public' . $cleanUri
+            : __DIR__ . $cleanUri;
+
         if (is_file($assetPath)) {
             $ext = strtolower(pathinfo($assetPath, PATHINFO_EXTENSION));
             $contentTypes = [
                 'css'   => 'text/css; charset=utf-8',
                 'js'    => 'application/javascript; charset=utf-8',
+                'mjs'   => 'application/javascript; charset=utf-8',
+                'json'  => 'application/json; charset=utf-8',
                 'png'   => 'image/png',
                 'jpg'   => 'image/jpeg',
                 'jpeg'  => 'image/jpeg',
@@ -47,6 +52,8 @@ if (php_sapi_name() === 'cli-server') {
                 'ttf'   => 'font/ttf',
             ];
 
+            header('Access-Control-Allow-Origin: *');
+            header('Cross-Origin-Resource-Policy: cross-origin');
             if (isset($contentTypes[$ext])) {
                 header('Content-Type: ' . $contentTypes[$ext]);
             } else {

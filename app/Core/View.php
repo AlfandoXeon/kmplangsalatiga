@@ -2,22 +2,35 @@
 
 namespace App\Core;
 
-use App\Config\App;
-
+/**
+ * ============================================================================
+ * Class View - Template Engine Berbasis Output Buffering PHP Murni
+ * ============================================================================
+ * Cara Kerja:
+ * 1. Mengekstrak variabel `$data` dari Controller agar tersedia di dalam View.
+ * 2. Menyuntikkan variabel konteks global (`$currentUser`, `$isLoggedIn`,
+ *    `$isAdmin`, `$isPengurus`, `$flashSuccess`, `$flashError`).
+ * 3. Menangkap output HTML dari berkas View ke dalam variabel `$content` menggunakan
+ *    `ob_start()` dan `ob_get_clean()`, lalu membungkusnya di dalam Layout utama.
+ * ============================================================================
+ */
 class View
 {
+    /**
+     * Me-render berkas View dan menyisipkannya ke dalam Layout.
+     */
     public function render(string $viewPath, array $data = [], string $layout = 'main'): void
     {
-        // Extract data to local variables for views
-        extract($data);
+        // Ekstrak array asosiatif menjadi variabel lokal untuk template
+        extract($data, EXTR_SKIP);
 
-        // Current user session helper
+        // Variabel helper status autentikasi & peran pengguna
         $currentUser = $_SESSION['user'] ?? null;
         $isLoggedIn = !empty($currentUser);
-        $isAdmin = $isLoggedIn && ($currentUser['role'] === 'admin');
-        $isPengurus = $isLoggedIn && in_array($currentUser['role'], ['admin', 'pengurus'], true);
+        $isAdmin = $isLoggedIn && (($currentUser['role'] ?? '') === 'admin');
+        $isPengurus = $isLoggedIn && in_array($currentUser['role'] ?? '', ['admin', 'pengurus'], true);
 
-        // Flash message helper
+        // Ambil dan bersihkan pesan Flash dari sesi (sekali pakai)
         $flashSuccess = $_SESSION['flash_success'] ?? null;
         $flashError = $_SESSION['flash_error'] ?? null;
         unset($_SESSION['flash_success'], $_SESSION['flash_error']);
@@ -25,22 +38,23 @@ class View
         $viewFile = __DIR__ . '/../Views/' . $viewPath . '.php';
 
         if (!file_exists($viewFile)) {
-            echo "View file [$viewFile] tidak ditemukan.";
+            http_response_code(500);
+            echo "Berkas View [{$viewPath}] tidak ditemukan.";
             return;
         }
 
-        // Buffer view content
+        // Tangkap output dari berkas View ke dalam variabel $content
         ob_start();
         require $viewFile;
         $content = ob_get_clean();
 
-        // If no layout requested, render raw content
+        // Jika diminta tanpa pembungkus layout ('raw'), langsung cetak isi
         if ($layout === 'raw') {
             echo $content;
             return;
         }
 
-        // Load layout
+        // Muat berkas Layout pembungkus (main, admin, atau auth)
         $layoutFile = __DIR__ . '/../Views/layouts/' . $layout . '.php';
         if (file_exists($layoutFile)) {
             require $layoutFile;

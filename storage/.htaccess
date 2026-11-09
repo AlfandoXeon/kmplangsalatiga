@@ -1,5 +1,7 @@
-# Keamanan Direktori Upload: Mencegah eksekusi skrip PHP di folder storage
-<FilesMatch "\.(php|phtml|php3|php4|php5|php7|php8|phps|phar|cgi|pl|exe|sh)$">
+Options -Indexes
+
+# Keamanan Direktori Upload: Mencegah eksekusi skrip PHP/eksekutabel di folder storage
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|php8|phps|phar|cgi|pl|exe|sh|htaccess|env|log)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -8,3 +10,11 @@
         Deny from all
     </IfModule>
 </FilesMatch>
+
+# Izinkan akses Cross-Origin untuk gambar dan video dokumentasi yang diunggah
+<IfModule mod_headers.c>
+    <FilesMatch "\.(png|jpg|jpeg|webp|gif|svg|mp4|webm)$">
+        Header set Access-Control-Allow-Origin "*"
+        Header set Cross-Origin-Resource-Policy "cross-origin"
+    </FilesMatch>
+</IfModule>

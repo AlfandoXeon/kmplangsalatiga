@@ -18,7 +18,7 @@ Website Kmplang/
 │   └── Views/           # Layouts, Partials, Home, Auth, Programs, Activities, Articles, Members, Admin
 ├── database/
 │   ├── schema.sql       # Struktur tabel DDL MySQL
-│   └── seed.sql         # Data awal default (admin, proker 2025/2026, settings)
+│   └── seed.sql         # Data awal default (admin, proker 2026/2027, settings)
 ├── public/              # Web Root (Front Controller index.php & static assets)
 │   ├── index.php
 │   ├── .htaccess
